@@ -123,72 +123,6 @@ button:hover {
   transform: translate(-50%, -50%);
   z-index: 99999;
 }
-
-/* --- Responsive tweaks --- */
-@media (max-width: 768px) {
-  .card {
-    width: 90%;
-    padding: 30px 20px;
-    font-size: 1.2rem;
-  }
-
-  h1 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-  }
-
-  button {
-    padding: 12px 20px;
-    font-size: 16px;
-  }
-
-  #yes {
-    transform: translate(-50%, 30px); /* center better on small screens */
-  }
-
-  #no {
-    transform: translate(-50%, 80px);
-  }
-
-  #countdown {
-    font-size: 80px;
-  }
-
-  #message {
-    font-size: 28px;
-  }
-
-  #custom-cursor {
-    font-size: 24px;
-  }
-}
-
-@media (max-width: 480px) {
-  .card {
-    padding: 20px 15px;
-  }
-
-  h1 {
-    font-size: 1.2rem;
-  }
-
-  button {
-    padding: 10px 15px;
-    font-size: 14px;
-  }
-
-  #countdown {
-    font-size: 50px;
-  }
-
-  #message {
-    font-size: 22px;
-  }
-
-  #custom-cursor {
-    font-size: 20px;
-  }
-}
 </style>
 </head>
 <body>
@@ -222,41 +156,38 @@ function createHeart(){
 }
 const heartInterval=setInterval(createHeart,400);
 
-// ---------------- NO button dodge (desktop only) ----------------
+// ---------------- NO button dodge ----------------
 const noBtn=document.getElementById("no");
+let x = window.innerWidth/2 + 10;
+let y = window.innerHeight/2 + 48;
+let vx = 0, vy = 0;
+const repelRadius=220, stiffness=0.015, damping=0.82;
 
-if (!('ontouchstart' in window)) {
-  let x = window.innerWidth/2 + 10;
-  let y = window.innerHeight/2 + 48;
-  let vx = 0, vy = 0;
-  const repelRadius=220, stiffness=0.015, damping=0.82;
-
-  function animate(){
-    vx*=damping; vy*=damping;
-    x+=vx; y+=vy;
-    const rect=noBtn.getBoundingClientRect();
-    const maxX = window.innerWidth - rect.width;
-    const maxY = window.innerHeight - rect.height;
-    if(x<0){x=0;vx*=-0.4;} if(x>maxX){x=maxX;vx*=-0.4;}
-    if(y<0){y=0;vy*=-0.4;} if(y>maxY){y=maxY;vy*=-0.4;}
-    noBtn.style.left=x+'px';
-    noBtn.style.top=y+'px';
-    requestAnimationFrame(animate);
-  }
-
-  document.addEventListener("mousemove", e=>{
-    const rect=noBtn.getBoundingClientRect();
-    const cx=rect.left+rect.width/2;
-    const cy=rect.top+rect.height/2;
-    const dx=cx-e.clientX, dy=cy-e.clientY, dist=Math.hypot(dx,dy)||1;
-    if(dist<repelRadius){
-      const force=(1-dist/repelRadius);
-      vx+=dx/dist*force*stiffness*1000;
-      vy+=dy/dist*force*stiffness*1000;
-    }
-  });
-  animate();
+function animate(){
+  vx*=damping; vy*=damping;
+  x+=vx; y+=vy;
+  const rect=noBtn.getBoundingClientRect();
+  const maxX = window.innerWidth - rect.width;
+  const maxY = window.innerHeight - rect.height;
+  if(x<0){x=0;vx*=-0.4;} if(x>maxX){x=maxX;vx*=-0.4;}
+  if(y<0){y=0;vy*=-0.4;} if(y>maxY){y=maxY;vy*=-0.4;}
+  noBtn.style.left=x+'px';
+  noBtn.style.top=y+'px';
+  requestAnimationFrame(animate);
 }
+
+document.addEventListener("mousemove", e=>{
+  const rect=noBtn.getBoundingClientRect();
+  const cx=rect.left+rect.width/2;
+  const cy=rect.top+rect.height/2;
+  const dx=cx-e.clientX, dy=cy-e.clientY, dist=Math.hypot(dx,dy)||1;
+  if(dist<repelRadius){
+    const force=(1-dist/repelRadius);
+    vx+=dx/dist*force*stiffness*1000;
+    vy+=dy/dist*force*stiffness*1000;
+  }
+});
+animate();
 
 // ---------------- Sounds ----------------
 const heartbeat = new Audio("https://freesound.org/data/previews/426/426997_5121236-lq.mp3"); // heartbeat
@@ -292,6 +223,7 @@ function yesClicked(){
   yesBtn.style.display='none';
   document.body.style.background='#ff6b6b';
 
+  // Emoji explosion
   for(let i=0;i<100;i++){
     const c = document.createElement('div');
     c.textContent = heartEmojis[Math.floor(Math.random()*heartEmojis.length)];
@@ -350,6 +282,7 @@ noBtn.addEventListener("click", ()=>{
   let timer = 5;
   countdown.textContent = timer;
 
+  // -------- AUDIO --------
   const beepCtx = new (window.AudioContext || window.webkitAudioContext)();
 
   function beep(){
@@ -368,6 +301,7 @@ noBtn.addEventListener("click", ()=>{
     osc.stop(now + 0.2);
   }
 
+  // 🔊 FIRST BEEP — EXACTLY WHEN 5 APPEARS
   beep();
 
   const beepInterval = setInterval(beep, 1000);
